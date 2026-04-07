@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Daily Routine Tracker</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            margin: 0;
+            padding: 0;
+            color: #333;
+        }
+
+        .container {
+            max-width: 400px;
+            margin: 60px auto;
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+        }
+
+        h2 {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .input-group {
+            display: flex;
+            gap: 10px;
+        }
+
+        input {
+            flex: 1;
+            padding: 10px;
+            border-radius: 6px;
+            border: 1px solid #ccc;
+        }
+
+        button {
+            border: none;
+            border-radius: 6px;
+            padding: 10px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .add-btn {
+            background: #667eea;
+            color: white;
+        }
+
+        .task {
+            background: #f9f9f9;
+            margin-top: 10px;
+            padding: 12px;
+            border-radius: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .completed {
+            text-decoration: line-through;
+            color: gray;
+        }
+
+        .btn-group button {
+            margin-left: 5px;
+        }
+
+        .done-btn {
+            background: #4CAF50;
+            color: white;
+        }
+
+        .delete-btn {
+            background: #e74c3c;
+            color: white;
+        }
+
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>📅 Daily Routine</h2>
+
+    <div class="input-group">
+        <input type="text" id="taskInput" placeholder="Enter task">
+        <button class="add-btn" onclick="addTask()">+</button>
+    </div>
+
+    <div id="taskList"></div>
+</div>
+
+<script>
+async function addTask() {
+    const task = document.getElementById("taskInput").value;
+
+    if (!task) {
+        alert("Enter a task!");
+        return;
+    }
+
+    await fetch("http://localhost:3000/add-task", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ task })
+    });
+
+    document.getElementById("taskInput").value = "";
+    loadTasks();
+}
+
+async function loadTasks() {
+    const res = await fetch("http://localhost:3000/tasks");
+    const data = await res.json();
+
+    let list = "";
+    data.forEach(t => {
+        list += `
+        <div class="task">
+            <span class="${t.status === 'completed' ? 'completed' : ''}">
+                ${t.task}
+            </span>
+            <div class="btn-group">
+                <button class="done-btn" onclick="completeTask(${t.id})">✔</button>
+                ${t.status === "completed" ? 
+                    `<button class="delete-btn" onclick="deleteTask(${t.id})">🗑</button>` 
+                    : ""}
+            </div>
+        </div>`;
+    });
+
+    document.getElementById("taskList").innerHTML = list;
+}
+
+async function completeTask(id) {
+    await fetch("http://localhost:3000/update-task", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id })
+    });
+
+    loadTasks();
+}
+
+async function deleteTask(id) {
+    await fetch("http://localhost:3000/delete-task", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id })
+    });
+
+    loadTasks();
+}
+
+loadTasks();
+</script>
+
+</body>
+</html>
