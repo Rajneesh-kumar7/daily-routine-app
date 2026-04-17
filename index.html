@@ -1,95 +1,116 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Daily Routine</title>
-    <style>
-        body {
-            margin: 0;
-            font-family: Arial, sans-serif;
-            background: #0f172a;
-            color: #fff;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-        }
+<title>Daily Routine</title>
 
-        .container {
-            background: #1e293b;
-            padding: 25px;
-            border-radius: 12px;
-            width: 350px;
-            box-shadow: 0 0 20px rgba(0,0,0,0.5);
-        }
+<style>
+body {
+    margin: 0;
+    font-family: 'Segoe UI';
+    background: linear-gradient(270deg, #0f172a, #1e293b, #020617);
+    background-size: 600% 600%;
+    animation: bgMove 10s infinite;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+}
 
-        h2 {
-            text-align: center;
-            margin-bottom: 20px;
-        }
+@keyframes bgMove {
+    0% {background-position: 0% 50%;}
+    50% {background-position: 100% 50%;}
+    100% {background-position: 0% 50%;}
+}
 
-        .input-group {
-            display: flex;
-            gap: 10px;
-        }
+.container {
+    background: rgba(30,41,59,0.8);
+    padding: 25px;
+    border-radius: 15px;
+    width: 350px;
+    backdrop-filter: blur(10px);
+    box-shadow: 0 0 30px rgba(0,255,150,0.3);
+    animation: fadeIn 1s ease;
+}
 
-        input {
-            flex: 1;
-            padding: 10px;
-            border: none;
-            border-radius: 6px;
-            outline: none;
-        }
+@keyframes fadeIn {
+    from {opacity:0; transform: translateY(20px);}
+    to {opacity:1;}
+}
 
-        button {
-            background: #22c55e;
-            border: none;
-            padding: 10px 15px;
-            border-radius: 6px;
-            color: white;
-            cursor: pointer;
-            transition: 0.3s;
-        }
+h2 {
+    text-align: center;
+    margin-bottom: 20px;
+}
 
-        button:hover {
-            background: #16a34a;
-        }
+.input-group {
+    display: flex;
+    gap: 10px;
+}
 
-        ul {
-            list-style: none;
-            padding: 0;
-            margin-top: 20px;
-        }
+input {
+    flex: 1;
+    padding: 10px;
+    border-radius: 6px;
+    border: none;
+    outline: none;
+}
 
-        li {
-            background: #334155;
-            padding: 10px;
-            border-radius: 6px;
-            margin-bottom: 10px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
+button {
+    background: #22c55e;
+    border: none;
+    padding: 10px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: 0.3s;
+}
 
-        .delete {
-            background: #ef4444;
-            padding: 5px 10px;
-            border-radius: 5px;
-            cursor: pointer;
-        }
+button:hover {
+    transform: scale(1.1);
+    background: #16a34a;
+}
 
-        .delete:hover {
-            background: #dc2626;
-        }
-    </style>
+ul {
+    list-style: none;
+    padding: 0;
+    margin-top: 20px;
+}
+
+li {
+    background: #334155;
+    padding: 10px;
+    border-radius: 6px;
+    margin-bottom: 10px;
+    display: flex;
+    justify-content: space-between;
+    animation: slideIn 0.4s ease;
+}
+
+@keyframes slideIn {
+    from {transform: translateX(-20px); opacity:0;}
+    to {transform: translateX(0); opacity:1;}
+}
+
+.delete {
+    background: red;
+    padding: 5px 10px;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+.delete:hover {
+    transform: scale(1.2);
+}
+</style>
 </head>
 
 <body>
 
 <div class="container">
-    <h2>Daily Routine</h2>
+    <h2>⚡ Daily Routine</h2>
 
     <div class="input-group">
-        <input type="text" id="taskInput" placeholder="Enter task...">
+        <input id="taskInput" placeholder="Enter task...">
         <button onclick="addTask()">Add</button>
     </div>
 
@@ -102,10 +123,8 @@ async function addTask() {
 
     await fetch("/add-task", {
         method: "POST",
-        headers: {
-            "Content-Type": "application/json"
-        },
-        body: JSON.stringify({ task })
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({task})
     });
 
     document.getElementById("taskInput").value = "";
@@ -134,10 +153,8 @@ async function loadTasks() {
 async function deleteTask(id) {
     await fetch("/delete-task", {
         method: "POST",
-        headers: {
-            "Content-Type": "application/json"
-        },
-        body: JSON.stringify({ id })
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({id})
     });
 
     loadTasks();
