@@ -2,16 +2,96 @@
 <html>
 <head>
 <title>Daily Routine</title>
+
+<style>
+body {
+    margin: 0;
+    font-family: Arial;
+    background: linear-gradient(270deg,#0f172a,#1e293b,#020617);
+    background-size: 600% 600%;
+    animation: bg 10s infinite;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+}
+
+@keyframes bg {
+    0%{background-position:0%}
+    50%{background-position:100%}
+    100%{background-position:0%}
+}
+
+.container {
+    background: rgba(30,41,59,0.9);
+    padding: 25px;
+    border-radius: 12px;
+    width: 350px;
+    box-shadow: 0 0 25px rgba(0,255,150,0.3);
+}
+
+h2 { text-align: center; }
+
+input {
+    width: 70%;
+    padding: 10px;
+    border: none;
+    border-radius: 5px;
+}
+
+button {
+    padding: 10px;
+    border: none;
+    background: #22c55e;
+    color: white;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+ul { list-style: none; padding: 0; }
+
+li {
+    background: #334155;
+    margin-top: 10px;
+    padding: 10px;
+    border-radius: 5px;
+    display: flex;
+    justify-content: space-between;
+    animation: slide 0.3s;
+}
+
+@keyframes slide {
+    from {transform: translateX(-20px); opacity:0;}
+    to {transform: translateX(0); opacity:1;}
+}
+
+.delete {
+    background: red;
+    padding: 5px;
+    cursor: pointer;
+    border-radius: 4px;
+}
+
+.complete {
+    background: green;
+    padding: 5px;
+    cursor: pointer;
+    border-radius: 4px;
+    margin-right: 5px;
+}
+</style>
 </head>
 
 <body>
 
+<div class="container">
 <h2>Daily Routine</h2>
 
 <input id="taskInput" placeholder="Enter task">
 <button onclick="addTask()">Add</button>
 
 <ul id="taskList"></ul>
+</div>
 
 <script>
 async function addTask() {
@@ -23,6 +103,7 @@ async function addTask() {
         body: JSON.stringify({task})
     });
 
+    document.getElementById("taskInput").value="";
     loadTasks();
 }
 
@@ -33,15 +114,17 @@ async function loadTasks() {
     const list = document.getElementById("taskList");
     list.innerHTML="";
 
-    data.forEach(t => {
+    data.forEach(t=>{
         const li = document.createElement("li");
 
         li.innerHTML = `
-            <span style="${t.status==='completed' ? 'text-decoration:line-through' : ''}">
+            <span style="${t.status==='completed' ? 'text-decoration:line-through;opacity:0.5;' : ''}">
                 ${t.task}
             </span>
-            <button onclick="completeTask(${t.id})">✔</button>
-            <button onclick="deleteTask(${t.id})">X</button>
+            <div>
+                <span class="complete" onclick="completeTask(${t.id})">✔</span>
+                <span class="delete" onclick="deleteTask(${t.id})">X</span>
+            </div>
         `;
 
         list.appendChild(li);
