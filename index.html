@@ -6,100 +6,78 @@
 <style>
 body {
     margin: 0;
-    font-family: 'Segoe UI';
-    background: linear-gradient(270deg, #0f172a, #1e293b, #020617);
+    font-family: Arial;
+    background: linear-gradient(270deg,#0f172a,#1e293b,#020617);
     background-size: 600% 600%;
-    animation: bgMove 10s infinite;
+    animation: bg 10s infinite;
     display: flex;
     justify-content: center;
     align-items: center;
     height: 100vh;
 }
 
-@keyframes bgMove {
-    0% {background-position: 0% 50%;}
-    50% {background-position: 100% 50%;}
-    100% {background-position: 0% 50%;}
+@keyframes bg {
+    0%{background-position:0%}
+    50%{background-position:100%}
+    100%{background-position:0%}
 }
 
 .container {
-    background: rgba(30,41,59,0.8);
+    background: rgba(30,41,59,0.9);
     padding: 25px;
-    border-radius: 15px;
+    border-radius: 12px;
     width: 350px;
-    backdrop-filter: blur(10px);
-    box-shadow: 0 0 30px rgba(0,255,150,0.3);
-    animation: fadeIn 1s ease;
+    box-shadow: 0 0 25px rgba(0,255,150,0.3);
 }
 
-@keyframes fadeIn {
-    from {opacity:0; transform: translateY(20px);}
-    to {opacity:1;}
-}
-
-h2 {
-    text-align: center;
-    margin-bottom: 20px;
-}
-
-.input-group {
-    display: flex;
-    gap: 10px;
-}
+h2 { text-align: center; }
 
 input {
-    flex: 1;
+    width: 70%;
     padding: 10px;
-    border-radius: 6px;
     border: none;
-    outline: none;
+    border-radius: 5px;
 }
 
 button {
-    background: #22c55e;
-    border: none;
     padding: 10px;
-    border-radius: 6px;
+    border: none;
+    background: #22c55e;
+    color: white;
+    border-radius: 5px;
     cursor: pointer;
-    transition: 0.3s;
 }
 
-button:hover {
-    transform: scale(1.1);
-    background: #16a34a;
-}
-
-ul {
-    list-style: none;
-    padding: 0;
-    margin-top: 20px;
-}
+ul { list-style: none; padding: 0; }
 
 li {
     background: #334155;
+    margin-top: 10px;
     padding: 10px;
-    border-radius: 6px;
-    margin-bottom: 10px;
+    border-radius: 5px;
     display: flex;
     justify-content: space-between;
-    animation: slideIn 0.4s ease;
+    animation: slide 0.3s;
 }
 
-@keyframes slideIn {
+@keyframes slide {
     from {transform: translateX(-20px); opacity:0;}
     to {transform: translateX(0); opacity:1;}
 }
 
 .delete {
     background: red;
-    padding: 5px 10px;
-    border-radius: 5px;
+    padding: 5px;
     cursor: pointer;
-    transition: 0.3s;
+    border-radius: 4px;
 }
 
-.delete:hover {
-    transform: scale(1.2);
+.complete {
+    background: green;
+    padding: 5px;
+    cursor: pointer;
+    border-radius: 4px;
+    margin-right: 5px;
 }
 </style>
 </head>
@@ -107,14 +85,12 @@ li {
 <body>
 
 <div class="container">
-    <h2>⚡ Daily Routine</h2>
+<h2>Daily Routine</h2>
 
-    <div class="input-group">
-        <input id="taskInput" placeholder="Enter task...">
-        <button onclick="addTask()">Add</button>
-    </div>
+<input id="taskInput" placeholder="Enter task">
+<button onclick="addTask()">Add</button>
 
-    <ul id="taskList"></ul>
+<ul id="taskList"></ul>
 </div>
 
 <script>
@@ -123,11 +99,11 @@ async function addTask() {
 
     await fetch("/add-task", {
         method: "POST",
-        headers: {"Content-Type": "application/json"},
+        headers: {"Content-Type":"application/json"},
         body: JSON.stringify({task})
     });
 
-    document.getElementById("taskInput").value = "";
+    document.getElementById("taskInput").value="";
     loadTasks();
 }
 
@@ -136,27 +112,40 @@ async function loadTasks() {
     const data = await res.json();
 
     const list = document.getElementById("taskList");
-    list.innerHTML = "";
+    list.innerHTML="";
 
-    data.forEach(t => {
+    data.forEach(t=>{
         const li = document.createElement("li");
 
         li.innerHTML = `
-            ${t.task}
-            <span class="delete" onclick="deleteTask(${t.id})">X</span>
+            <span style="${t.status==='completed' ? 'text-decoration:line-through;opacity:0.5;' : ''}">
+                ${t.task}
+            </span>
+            <div>
+                <span class="complete" onclick="completeTask(${t.id})">✔</span>
+                <span class="delete" onclick="deleteTask(${t.id})">X</span>
+            </div>
         `;
 
         list.appendChild(li);
     });
 }
 
-async function deleteTask(id) {
-    await fetch("/delete-task", {
-        method: "POST",
-        headers: {"Content-Type": "application/json"},
+async function completeTask(id){
+    await fetch("/complete-task",{
+        method:"POST",
+        headers:{"Content-Type":"application/json"},
         body: JSON.stringify({id})
     });
+    loadTasks();
+}
 
+async function deleteTask(id){
+    await fetch("/delete-task",{
+        method:"POST",
+        headers:{"Content-Type":"application/json"},
+        body: JSON.stringify({id})
+    });
     loadTasks();
 }
 
