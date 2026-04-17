@@ -2,15 +2,99 @@
 <html>
 <head>
     <title>Daily Routine</title>
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #0f172a;
+            color: #fff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        .container {
+            background: #1e293b;
+            padding: 25px;
+            border-radius: 12px;
+            width: 350px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.5);
+        }
+
+        h2 {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .input-group {
+            display: flex;
+            gap: 10px;
+        }
+
+        input {
+            flex: 1;
+            padding: 10px;
+            border: none;
+            border-radius: 6px;
+            outline: none;
+        }
+
+        button {
+            background: #22c55e;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 6px;
+            color: white;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        button:hover {
+            background: #16a34a;
+        }
+
+        ul {
+            list-style: none;
+            padding: 0;
+            margin-top: 20px;
+        }
+
+        li {
+            background: #334155;
+            padding: 10px;
+            border-radius: 6px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .delete {
+            background: #ef4444;
+            padding: 5px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .delete:hover {
+            background: #dc2626;
+        }
+    </style>
 </head>
+
 <body>
 
-<h2>Daily Routine App</h2>
+<div class="container">
+    <h2>Daily Routine</h2>
 
-<input type="text" id="taskInput" placeholder="Enter task">
-<button onclick="addTask()">Add Task</button>
+    <div class="input-group">
+        <input type="text" id="taskInput" placeholder="Enter task...">
+        <button onclick="addTask()">Add</button>
+    </div>
 
-<ul id="taskList"></ul>
+    <ul id="taskList"></ul>
+</div>
 
 <script>
 async function addTask() {
@@ -24,6 +108,7 @@ async function addTask() {
         body: JSON.stringify({ task })
     });
 
+    document.getElementById("taskInput").value = "";
     loadTasks();
 }
 
@@ -36,9 +121,26 @@ async function loadTasks() {
 
     data.forEach(t => {
         const li = document.createElement("li");
-        li.textContent = t.task;
+
+        li.innerHTML = `
+            ${t.task}
+            <span class="delete" onclick="deleteTask(${t.id})">X</span>
+        `;
+
         list.appendChild(li);
     });
+}
+
+async function deleteTask(id) {
+    await fetch("/delete-task", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ id })
+    });
+
+    loadTasks();
 }
 
 loadTasks();
