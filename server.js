@@ -12,11 +12,7 @@ let tasks = [];
 
 // Load tasks
 if (fs.existsSync(FILE)) {
-    try {
-        tasks = JSON.parse(fs.readFileSync(FILE, "utf-8"));
-    } catch {
-        tasks = [];
-    }
+    tasks = JSON.parse(fs.readFileSync(FILE, "utf-8"));
 }
 
 // Save tasks
@@ -39,7 +35,7 @@ app.post("/add-task", (req, res) => {
     tasks.push(newTask);
     saveTasks();
 
-    console.log("Added:", newTask);
+    console.log("🔥 Added:", newTask);
 
     res.send("Task Added");
 });
@@ -59,6 +55,8 @@ app.post("/complete-task", (req, res) => {
 
     saveTasks();
 
+    console.log("✅ Completed:", id);
+
     res.send("Completed");
 });
 
@@ -69,10 +67,12 @@ app.post("/delete-task", (req, res) => {
     tasks = tasks.filter(t => t.id != id);
     saveTasks();
 
+    console.log("❌ Deleted:", id);
+
     res.send("Deleted");
 });
 
 // START SERVER
 app.listen(3000, "0.0.0.0", () => {
-    console.log("Server running on port 3000");
+    console.log("🚀 Server running on port 3000");
 });
