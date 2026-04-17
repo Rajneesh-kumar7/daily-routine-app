@@ -45,6 +45,21 @@ app.get("/tasks", (req, res) => {
     res.json(tasks);
 });
 
+// COMPLETE TASK
+app.post("/complete-task", (req, res) => {
+    const { id } = req.body;
+
+    tasks = tasks.map(t =>
+        t.id == id ? { ...t, status: "completed" } : t
+    );
+
+    saveTasks();
+
+    console.log("✅ Completed:", id);
+
+    res.send("Completed");
+});
+
 // DELETE TASK
 app.post("/delete-task", (req, res) => {
     const { id } = req.body;
