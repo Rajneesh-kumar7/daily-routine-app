@@ -16,9 +16,9 @@ if (fs.existsSync(FILE)) {
         const data = JSON.parse(fs.readFileSync(FILE, "utf-8"));
 
         if (Array.isArray(data)) {
-            tasks = data; // old format
+            tasks = data;
         } else {
-            tasks = data.tasks || []; // new format
+            tasks = data.tasks || [];
         }
 
     } catch {
@@ -46,7 +46,7 @@ app.post("/add-task", (req, res) => {
     tasks.push(newTask);
     saveTasks();
 
-    console.log("Added:", newTask);
+    console.log("🔥 Added:", newTask);
 
     res.send("Task Added");
 });
@@ -60,11 +60,23 @@ app.get("/tasks", (req, res) => {
 app.post("/complete-task", (req, res) => {
     const { id } = req.body;
 
-    tasks = tasks.map(t =>
-        t.id == id ? { ...t, status: "completed" } : t
-    );
+    let found = false;
+
+    tasks = tasks.map(t => {
+        if (t.id == id) {
+            found = true;
+            return { ...t, status: "completed" };
+        }
+        return t;
+    });
 
     saveTasks();
+
+    if (found) {
+        console.log("✅ Completed Task ID:", id);
+    } else {
+        console.log("⚠️ Task not found for completion:", id);
+    }
 
     res.send("Completed");
 });
@@ -73,13 +85,22 @@ app.post("/complete-task", (req, res) => {
 app.post("/delete-task", (req, res) => {
     const { id } = req.body;
 
+    const before = tasks.length;
+
     tasks = tasks.filter(t => t.id != id);
+
     saveTasks();
+
+    if (tasks.length < before) {
+        console.log("❌ Deleted Task ID:", id);
+    } else {
+        console.log("⚠️ Task not found for delete:", id);
+    }
 
     res.send("Deleted");
 });
 
 // START SERVER
 app.listen(3000, "0.0.0.0", () => {
-    console.log("Server running on port 3000");
+    console.log("🚀 Server running on port 3000");
 });
