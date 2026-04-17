@@ -9,40 +9,44 @@ app.use(express.static(__dirname));
 const FILE = path.join(__dirname, "tasks.json");
 
 let tasks = [];
-let streak = 0;
 
-// Load data
+// Load tasks
 if (fs.existsSync(FILE)) {
-    const data = JSON.parse(fs.readFileSync(FILE, "utf-8"));
-    tasks = data.tasks || [];
-    streak = data.streak || 0;
+    try {
+        tasks = JSON.parse(fs.readFileSync(FILE, "utf-8"));
+    } catch {
+        tasks = [];
+    }
 }
 
-function saveData() {
-    fs.writeFileSync(FILE, JSON.stringify({ tasks, streak }, null, 2));
+// Save tasks
+function saveTasks() {
+    fs.writeFileSync(FILE, JSON.stringify(tasks, null, 2));
 }
 
 // ADD TASK
 app.post("/add-task", (req, res) => {
-    const { task, category, dueDate } = req.body;
+    const { task } = req.body;
+
+    if (!task) return res.send("Task required");
 
     const newTask = {
         id: Date.now(),
         task,
-        category,
-        dueDate,
         status: "pending"
     };
 
     tasks.push(newTask);
-    saveData();
+    saveTasks();
 
-    res.send("Added");
+    console.log("Added:", newTask);
+
+    res.send("Task Added");
 });
 
 // GET TASKS
 app.get("/tasks", (req, res) => {
-    res.json({ tasks, streak });
+    res.json(tasks);
 });
 
 // COMPLETE TASK
@@ -53,11 +57,8 @@ app.post("/complete-task", (req, res) => {
         t.id == id ? { ...t, status: "completed" } : t
     );
 
-    if (tasks.every(t => t.status === "completed")) {
-        streak++;
-    }
+    saveTasks();
 
-    saveData();
     res.send("Completed");
 });
 
@@ -66,11 +67,12 @@ app.post("/delete-task", (req, res) => {
     const { id } = req.body;
 
     tasks = tasks.filter(t => t.id != id);
-    saveData();
+    saveTasks();
 
     res.send("Deleted");
 });
 
+// START SERVER
 app.listen(3000, "0.0.0.0", () => {
     console.log("Server running on port 3000");
 });
