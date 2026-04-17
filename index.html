@@ -1,19 +1,16 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>Daily Routine</title>
+<title>Routine Pro</title>
 
 <style>
 body {
-    margin: 0;
+    margin:0;
     font-family: Arial;
     background: linear-gradient(270deg,#0f172a,#1e293b,#020617);
     background-size: 600% 600%;
     animation: bg 10s infinite;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100vh;
+    color:white;
 }
 
 @keyframes bg {
@@ -23,108 +20,124 @@ body {
 }
 
 .container {
-    background: rgba(30,41,59,0.9);
-    padding: 25px;
-    border-radius: 12px;
-    width: 350px;
-    box-shadow: 0 0 25px rgba(0,255,150,0.3);
+    max-width:400px;
+    margin:auto;
+    margin-top:50px;
+    background:#1e293b;
+    padding:20px;
+    border-radius:10px;
 }
 
-h2 { text-align: center; }
-
-input {
-    width: 70%;
-    padding: 10px;
-    border: none;
-    border-radius: 5px;
+input,select {
+    padding:8px;
+    margin:5px;
+    width:100%;
 }
 
 button {
-    padding: 10px;
-    border: none;
-    background: #22c55e;
-    color: white;
-    border-radius: 5px;
-    cursor: pointer;
+    background:#22c55e;
+    border:none;
+    padding:10px;
+    margin-top:5px;
+    cursor:pointer;
 }
 
-ul { list-style: none; padding: 0; }
-
-li {
-    background: #334155;
-    margin-top: 10px;
-    padding: 10px;
-    border-radius: 5px;
-    display: flex;
-    justify-content: space-between;
-    animation: slide 0.3s;
+.progress {
+    height:10px;
+    background:#334155;
+    margin:10px 0;
 }
 
-@keyframes slide {
-    from {transform: translateX(-20px); opacity:0;}
-    to {transform: translateX(0); opacity:1;}
+.progress-bar {
+    height:10px;
+    background:#22c55e;
 }
 
-.delete {
-    background: red;
-    padding: 5px;
-    cursor: pointer;
-    border-radius: 4px;
+.overdue {
+    color:red;
 }
 
-.complete {
-    background: green;
-    padding: 5px;
-    cursor: pointer;
-    border-radius: 4px;
-    margin-right: 5px;
-}
 </style>
 </head>
 
 <body>
 
 <div class="container">
-<h2>Daily Routine</h2>
 
-<input id="taskInput" placeholder="Enter task">
-<button onclick="addTask()">Add</button>
+<h2>🔥 Routine Pro</h2>
+
+<input id="taskInput" placeholder="Task">
+<select id="category">
+<option>Study</option>
+<option>Gym</option>
+<option>Work</option>
+</select>
+
+<input type="date" id="dueDate">
+
+<button onclick="addTask()">Add Task</button>
+
+<div class="progress">
+<div class="progress-bar" id="progressBar"></div>
+</div>
+
+<p id="stats"></p>
+<p id="streak"></p>
 
 <ul id="taskList"></ul>
+
 </div>
 
 <script>
-async function addTask() {
+async function addTask(){
     const task = document.getElementById("taskInput").value;
+    const category = document.getElementById("category").value;
+    const dueDate = document.getElementById("dueDate").value;
 
-    await fetch("/add-task", {
-        method: "POST",
-        headers: {"Content-Type":"application/json"},
-        body: JSON.stringify({task})
+    await fetch("/add-task",{
+        method:"POST",
+        headers:{"Content-Type":"application/json"},
+        body: JSON.stringify({task,category,dueDate})
     });
 
-    document.getElementById("taskInput").value="";
     loadTasks();
 }
 
-async function loadTasks() {
+async function loadTasks(){
     const res = await fetch("/tasks");
     const data = await res.json();
+
+    const tasks = data.tasks;
+    const streak = data.streak;
+
+    let completed = tasks.filter(t=>t.status==="completed").length;
+
+    document.getElementById("progressBar").style.width =
+        (tasks.length ? (completed/tasks.length)*100 : 0) + "%";
+
+    document.getElementById("stats").innerText =
+        `${completed}/${tasks.length} completed`;
+
+    document.getElementById("streak").innerText =
+        `🔥 Streak: ${streak}`;
 
     const list = document.getElementById("taskList");
     list.innerHTML="";
 
-    data.forEach(t=>{
+    tasks.forEach(t=>{
         const li = document.createElement("li");
 
+        const overdue = t.dueDate && new Date(t.dueDate) < new Date() && t.status !== "completed";
+
         li.innerHTML = `
-            <span style="${t.status==='completed' ? 'text-decoration:line-through;opacity:0.5;' : ''}">
-                ${t.task}
-            </span>
-            <div>
-                <span class="complete" onclick="completeTask(${t.id})">✔</span>
-                <span class="delete" onclick="deleteTask(${t.id})">X</span>
-            </div>
+        <span style="${t.status==='completed' ? 'text-decoration:line-through' : ''}"
+              class="${overdue ? 'overdue' : ''}">
+            ${t.task} (${t.category})
+        </span>
+        <div>
+            <button onclick="completeTask(${t.id})">✔</button>
+            <button onclick="deleteTask(${t.id})">X</button>
+        </div>
         `;
 
         list.appendChild(li);
